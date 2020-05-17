@@ -79,6 +79,7 @@ classifier = Sequential()
 
 # Añadir las capas de entrada y primera capa oculta
 classifier.add(Dense(units = 6, kernel_initializer = "uniform",  activation = "relu", input_dim = 11))
+# Evitar el overfitting, probar entre 0.1 y 0.5 no subir de 0.5
 classifier.add(Dropout(p = 0.1))
 
 # Añadir la segunda capa oculta
@@ -99,6 +100,9 @@ classifier.fit(X_train, y_train,  batch_size = 10, epochs = 100)
 
 # Predicción de los resultados con el Conjunto de Testing
 y_pred  = classifier.predict(X_test)
+# Convertir la probabilidad del conjunto de test en 0 o 1
+# Necesario para la matriz de confusión
+# Vamos a estimar que para el banco el >50% es True y el resto Falso
 y_pred = (y_pred>0.5)
 
 # Elaborar una matriz de confusión
@@ -125,6 +129,8 @@ accuracies = cross_val_score(estimator=classifier, X = X_train, y = y_train, cv 
 
 mean = accuracies.mean()
 variance = accuracies.std()
+print(mean)
+print(variance)
 
 ### Mejorar la RNA
 #### Regularización de Dropout para evitar el *overfitting*
@@ -132,11 +138,14 @@ variance = accuracies.std()
 ### Ajustar la *RNA*
 from sklearn.model_selection import GridSearchCV # sklearn.grid_search
 
+# Nueva función con un parametro para el optimizador a utilizar en GridSearch
+# Se podria dar un vaor por defecto --> def build_classifier(optimizer = 'adam');
 def build_classifier(optimizer):
   classifier = Sequential()
   classifier.add(Dense(units = 6, kernel_initializer = "uniform",  activation = "relu", input_dim = 11))
   classifier.add(Dense(units = 6, kernel_initializer = "uniform",  activation = "relu"))
   classifier.add(Dense(units = 1, kernel_initializer = "uniform",  activation = "sigmoid"))
+  # Se usa el parametro como optimizador
   classifier.compile(optimizer = optimizer, loss = "binary_crossentropy", metrics = ["accuracy"])
   return classifier
 
